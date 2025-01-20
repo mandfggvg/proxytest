@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Tabs with Close Feature</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .tabs {
+      display: flex;
+      gap: 10px;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border-bottom: 2px solid #ccc;
+      overflow-x: auto;
+    }
+    .tab {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 10px 15px;
+      background: #0078D7;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      position: relative;
+    }
+    .tab.active {
+      background: #0056A4;
+    }
+    .tab .close-btn {
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 12px;
+      width: 18px;
+      height: 18px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+    }
+    iframe {
+      display: block;
+      width: 100%;
+      height: calc(100vh - 50px); /* Adjust height dynamically */
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="tabs">
+    <!-- Tabs will go here -->
+  </div>
+  <iframe id="iframe" src="https://www.google.com/?igu=1"></iframe>
+
+  <script>
+    const tabsContainer = document.querySelector('.tabs');
+    const iframe = document.querySelector('#iframe');
+    const sites = [
+      { name: 'Google', url: 'https://www.google.com/?igu=1' }
+    ];
+
+    // Function to create a tab dynamically
+    function createTab(name, url) {
+      const index = sites.length; // New index for the tab
+      sites.push({ name, url });
+
+      const tab = document.createElement('div');
+      tab.classList.add('tab');
+      tab.innerHTML = `
+        ${name} 
+        <button class="close-btn" title="Close Tab">x</button>
+      `;
+
+      // Click event to load the site
+      tab.onclick = (e) => {
+        if (!e.target.classList.contains('close-btn')) {
+          loadSite(index);
+        }
+      };
+
+      // Click event for the close button
+      tab.querySelector('.close-btn').onclick = (e) => {
+        e.stopPropagation(); // Prevent triggering tab click
+        closeTab(index, tab);
+      };
+
+      tabsContainer.appendChild(tab);
+      loadSite(index); // Load the site in iframe
+    }
+
+    // Function to load a site in the iframe
+    function loadSite(index) {
+      const tabs = document.querySelectorAll('.tab');
+      tabs.forEach(tab => tab.classList.remove('active'));
+      tabs[index].classList.add('active');
+      iframe.src = sites[index].url;
+    }
+
+    // Function to close a tab
+    function closeTab(index, tabElement) {
+      sites.splice(index, 1); // Remove the site from the array
+      tabElement.remove(); // Remove the tab from the DOM
+      if (sites.length > 0) {
+        loadSite(sites.length - 1); // Load the last tab
+      } else {
+        iframe.src = ''; // No tabs, clear iframe
+      }
+    }
+
+    // Initialize the first tab
+    createTab('Google', 'https://www.google.com/?igu=1');
+
+    // Automatically add tabs when clicking external links
+    document.addEventListener('click', (e) => {
+      const target = e.target;
+      if (target.tagName === 'A' && target.href) {
+        e.preventDefault(); // Prevent default link navigation
+        createTab(target.textContent || 'New Tab', target.href);
+      }
+    });
+  </script>
+</body>
+</html>
